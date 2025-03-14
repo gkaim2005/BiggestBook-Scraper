@@ -77,7 +77,7 @@ def get_product_details(driver, sku):
     except Exception as e:
         print(f"Error getting main product image for SKU {sku}: {e}")
     
-    return {
+    return{
         "SKU": sku, #Single line string
         "Product Name": product_name, #Single line string
         "Description": description, #Single line string
