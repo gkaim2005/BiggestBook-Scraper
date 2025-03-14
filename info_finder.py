@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 def get_product_details(driver, sku):
-    # Construct the URL for the product detail page using the SKU
+    #Gets wesbite url and uses 
     url = f"https://www.biggestbook.com/ui#/itemDetail?itemId={sku}"
     driver.get(url)
     
