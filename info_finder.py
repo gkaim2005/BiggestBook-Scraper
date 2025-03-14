@@ -22,7 +22,7 @@ def get_product_details(driver, sku):
     specifications = ""
     main_image = ""
 
-    #Gets full product name
+    #Gets full product name and prints error if unsuccessful
     try:
         product_name_elem = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#pd-item-desc.ess-detail-desc"))
@@ -31,7 +31,7 @@ def get_product_details(driver, sku):
     except Exception as e:
         print(f"Error getting product name for SKU {sku}: {e}")
 
-    #Gets product description
+    #Gets product description and prints error if unsuccessful
     try:
         description_elem = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.ess-detail-desc-info"))
@@ -40,7 +40,7 @@ def get_product_details(driver, sku):
     except Exception as e:
         print(f"Error getting description for SKU {sku}: {e}")
 
-    #Gets product specifications in "label: value" format and takes static snapshot of the table to prevent stale elements in process
+    #Gets product specifications in "label: value" format and prints error if unsuccessful and takes static snapshot of the table to prevent stale elements in process
     try:
         specs_table = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.ess-detail-content div.w-100.mr-4.ng-star-inserted table"))
@@ -66,7 +66,7 @@ def get_product_details(driver, sku):
     except Exception as e:
         print(f"Error getting specifications for SKU {sku}: {e}")
 
-    #Gets the one big image that appears on every product page
+    #Gets the one big image that appears on every product page and prints error if unsuccessful
     try:
         image_elem = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "img.ngxImageZoomThumbnail"))
