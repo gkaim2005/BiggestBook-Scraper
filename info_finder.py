@@ -2,7 +2,6 @@ import csv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -19,7 +18,7 @@ def get_product_details(driver, sku):
     specifications = ""
     main_image = ""
 
-    # Extract Product Name: using id "pd-item-desc" with class "ess-detail-desc"
+    # 1. Extract Product Name: using id="pd-item-desc" with class="ess-detail-desc"
     try:
         product_name_elem = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#pd-item-desc.ess-detail-desc"))
@@ -28,7 +27,7 @@ def get_product_details(driver, sku):
     except Exception as e:
         print(f"Error getting product name for SKU {sku}: {e}")
 
-    # Extract Description: div with class "ess-detail-desc-info"
+    # 2. Extract Description: div with class="ess-detail-desc-info"
     try:
         description_elem = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.ess-detail-desc-info"))
@@ -37,16 +36,30 @@ def get_product_details(driver, sku):
     except Exception as e:
         print(f"Error getting description for SKU {sku}: {e}")
 
-    # Extract Specifications: using the container with class "row"
+    # 3. Extract Specifications from the table with class="text-left ess-detail-table-values"
     try:
-        specs_elem = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div.row"))
+        specs_table = wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "table.text-left.ess-detail-table-values"))
         )
-        specifications = specs_elem.text
+        # Each row (<tr>) typically contains a <th> (label) and a <td> (value)
+        rows = specs_table.find_elements(By.TAG_NAME, "tr")
+        
+        all_specs = []
+        for row in rows:
+            try:
+                label = row.find_element(By.TAG_NAME, "th").text.strip()
+                value = row.find_element(By.TAG_NAME, "td").text.strip()
+                all_specs.append(f"{label}: {value}")
+            except Exception:
+                # If a row doesn't match the expected structure, skip it
+                pass
+        
+        # Join each spec pair with a newline
+        specifications = "\n".join(all_specs)
     except Exception as e:
         print(f"Error getting specifications for SKU {sku}: {e}")
 
-    # Extract Main Product Image: img with class "ngxImageZoomThumbnail"
+    # 4. Extract Main Product Image: img with class="ngxImageZoomThumbnail"
     try:
         image_elem = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "img.ngxImageZoomThumbnail"))
@@ -80,7 +93,7 @@ def main():
     driver = webdriver.Chrome(options=chrome_options)
     
     # Read SKUs from the input file
-    with open(input_file, "r") as f:
+    with open(input_file, "r", encoding="utf-8") as f:
         skus = [line.strip() for line in f if line.strip()]
     
     # Open a CSV file to write the scraped data
