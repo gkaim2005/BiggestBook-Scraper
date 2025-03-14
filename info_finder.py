@@ -36,25 +36,25 @@ def get_product_details(driver, sku):
     except Exception as e:
         print(f"Error getting description for SKU {sku}: {e}")
 
-    # 3. Extract Specifications from the table with class="text-left ess-detail-table-values"
+    # 3. Extract Specifications:
+    # Locate the specifications table using a simplified selector and iterate through its rows.
     try:
         specs_table = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "table.text-left.ess-detail-table-values"))
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.ess-detail-content div.w-100.mr-4.ng-star-inserted table"))
         )
-        # Each row (<tr>) typically contains a <th> (label) and a <td> (value)
-        rows = specs_table.find_elements(By.TAG_NAME, "tr")
-        
+        # Get all rows in the table body
+        rows = specs_table.find_elements(By.CSS_SELECTOR, "tbody tr")
         all_specs = []
         for row in rows:
             try:
-                label = row.find_element(By.TAG_NAME, "th").text.strip()
-                value = row.find_element(By.TAG_NAME, "td").text.strip()
+                # Extract the label from <td class="ess-detail-table-name">
+                label = row.find_element(By.CSS_SELECTOR, "td.ess-detail-table-name").text.strip()
+                # Extract the value from <td class="ess-detail-table-values">
+                value = row.find_element(By.CSS_SELECTOR, "td.ess-detail-table-values").text.strip()
                 all_specs.append(f"{label}: {value}")
-            except Exception:
-                # If a row doesn't match the expected structure, skip it
-                pass
-        
-        # Join each spec pair with a newline
+            except Exception as e:
+                print(f"Error parsing a spec row for SKU {sku}: {e}")
+        # Join all specs with newlines so each appears on its own line in the CSV cell
         specifications = "\n".join(all_specs)
     except Exception as e:
         print(f"Error getting specifications for SKU {sku}: {e}")
