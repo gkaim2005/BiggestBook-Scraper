@@ -68,18 +68,28 @@ def get_product_details(driver, sku):
         print(f"Error getting specifications for SKU {sku}: {e}")
 
     try:
-        # Locate the shipping label cell.
         shipping_label_elem = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "td#pd-weight-label.text-left.ess-detail-table-name"))
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "td#pd-weight-label.text-left.ess-detail-table-name")
+            )
         )
-        # Find the parent row (assumes the shipping info is in the same row).
-        shipping_row = shipping_label_elem.find_element(By.XPATH, "./ancestor::tr")
-        shipping_html = shipping_row.get_attribute("outerHTML")
+        # Find the ancestor table of this row
+        shipping_table_elem = shipping_label_elem.find_element(By.XPATH, "./ancestor::table")
+        shipping_html = shipping_table_elem.get_attribute("outerHTML")
         soup_shipping = BeautifulSoup(shipping_html, "html.parser")
-        label_cell = soup_shipping.select_one("td#pd-weight-label.text-left.ess-detail-table-name")
-        value_cell = soup_shipping.select_one("td.text-left.ess-detail-table-values")
-        if label_cell and value_cell:
-            shipping_info = f"{label_cell.get_text(strip=True)}: {value_cell.get_text(strip=True)}"
+        rows_shipping = soup_shipping.select("tbody tr")
+        
+        shipping_info_list = []
+        for row in rows_shipping:
+            label_cell = row.select_one("td.ess-detail-table-name")
+            value_cell = row.select_one("td.ess-detail-table-values")
+            if label_cell and value_cell:
+                label_text = label_cell.get_text(strip=True)
+                value_text = value_cell.get_text(strip=True)
+                shipping_info_list.append(f"{label_text}: {value_text}")
+        
+        # Combine all shipping rows (Weight, Length, Height, Width, etc.) into a multiline string
+        shipping_info = "\n".join(shipping_info_list)
     except Exception as e:
         print(f"Error getting shipping weight & dimensions for SKU {sku}: {e}")
 
